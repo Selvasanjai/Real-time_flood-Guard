@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FloodGuard - Login</title>
+    <style>
+        :root {
+            /* Color Palette */
+            --color-safe: #27ae60;
+            --color-safe-bg: #eafaf1;
+            --color-danger: #c0392b;
+            --color-danger-bg: #fdedec;
+            --color-warning: #f39c12;
+            --color-text-main: #2c3e50;
+            --color-text-sub: #7f8c8d;
+            
+            /* Classic Background Gradient */
+            --bg-gradient-start: #0f2027;
+            --bg-gradient-mid: #203a43;
+            --bg-gradient-end: #2c5364;
+            
+            /* UI Colors */
+            --color-surface: #ffffff;
+            --color-border: #e0e0e0;
+            
+            /* Spacing */
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(180deg, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 50%, var(--bg-gradient-end) 100%);
+            background-attachment: fixed;
+            color: var(--color-text-main);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- View Management --- */
+        .view {
+            display: none;
+            height: 100%;
+        }
+
+        .view.active {
+            display: flex; /* Flex for centering login */
+            flex-direction: column;
+        }
+        
+        /* Specific for App View (scrollable) */
+        #view-app.active {
+            display: block;
+        }
+
+        /* --- LOGIN SCREEN STYLES --- */
+        #view-login {
+            justify-content: center;
+            align-items: center;
+            padding: var(--space-md);
+        }
+
+        .login-card {
+            background: var(--color-surface);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+
+        .app-logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--color-safe), #2ecc71);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-md);
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-text-main);
+            margin: 0 0 8px 0;
+        }
+
+        .login-subtitle {
+            font-size: 0.9rem;
+            color: var(--color-text-sub);
+            margin-bottom: var(--space-lg);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-md);
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            background: #f9f9f9;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--bg-gradient-end);
+            background: #fff;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--bg-gradient-mid), var(--bg-gradient-end));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: var(--space-sm);
+            transition: transform 0.1s;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        /* --- APP HEADER --- */
+        header {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: var(--space-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            margin: 0;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .connection-status {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #ffffff;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #2ecc71;
+            transition: background-color 0.3s;
+            box-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+        }
+
+        .status-dot.offline { 
+            background-color: #95a5a6; 
+            box-shadow: none;
+        }
+
+        /* --- Offline Banner --- */
+        #offline-banner {
+            display: none;
+            background-color: rgba(241, 196, 15, 0.9);
+            color: #2c3e50;
+            text-align: center;
+            font-size: 0.9rem;
+            padding: var(--space-sm);
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* --- Home List Views --- */
+        .sub-view {
+            display: none;
+            padding: var(--space-md);
+            padding-bottom: 80px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .sub-view.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .location-card {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: transform 0.2s;
+        }
+
+        .location-card:active { transform: scale(0.98); }
+
+        .location-card.status-flood {
+            border-left: 6px solid var(--color-danger);
+            background-color: #fff5f5;
+        }
+
+        .location-card.status-safe { border-left: 6px solid var(--color-safe); }
+
+        .card-info { flex: 1; }
+        
+        .card-title { font-weight: 700; font-size: 1.15rem; margin-bottom: 4px; }
+        .card-meta { font-size: 0.85rem; color: var(--color-text-sub); display: flex; flex-direction: column; gap: 3px; }
+
+        .badge {
+            padding: 8px 14px; border-radius: 25px; font-weight: 700; font-size: 0.75rem;
+            text-transform: uppercase; min-width: 100px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .badge.safe { background-color: var(--color-safe); color: white; }
+        .badge.danger { background-color: var(--color-danger); color: white; animation: pulse-red 2s infinite; }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(192, 57, 43, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0); }
+        }
+
+        /* --- Detail View --- */
+        .detail-header { display: flex; align-items: center; margin-bottom: var(--space-lg); }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2); border: none; color: #fff; font-size: 1.2rem;
+            font-weight: bold; cursor: pointer; padding: 10px 16px; border-radius: 20px; display: flex; align-items: center;
+        }
+
+        .status-hero { text-align: center; padding: var(--space-lg) var(--space-md); margin-bottom: var(--space-md); background: var(--color-surface); border-radius: var(--radius); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        
+        .status-hero-icon {
+            width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto var(--space-md); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-hero-text { font-size: 2.2rem; font-weight: 800; text-transform: uppercase; margin: 0; line-height: 1.2; }
+        .water-level-display { font-size: 1.3rem; font-weight: 600; color: var(--color-text-sub); margin-top: var(--space-sm); }
+
+        .alert-box {
+            background-color: #fff5f5; border: 1px solid var(--color-danger); color: var(--color-danger);
+            padding: var(--space-md); border-radius: var(--radius); display: flex; gap: var(--space-md);
+            align-items: start; line-height: 1.5; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: none;
+        }
+
+        /* --- Toast Notification --- */
+        #notification-container {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; pointer-events: none;
+            padding-top: 60px; padding-left: 10px; padding-right: 10px;
+        }
+
+        .toast {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); color: var(--color-text-main);
+            padding: 16px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); margin-bottom: 10px;
+            display: flex; align-items: center; gap: 12px; transform: translateY(-100px); opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-left: 5px solid var(--color-warning); pointer-events: auto;
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast-icon { color: var(--color-warning); }
+        .toast-content h4 { margin: 0 0 4px 0; font-size: 1rem; color: #2c3e50; }
+        .toast-content p { margin: 0; font-size: 0.9rem; color: #555; }
+
+        /* --- Demo Controls --- */
+        .demo-controls {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(44, 62, 80, 0.95);
+            backdrop-filter: blur(5px); padding: 12px; display: flex; justify-content: center; gap: 10px;
+            font-size: 0.8rem; z-index: 200; border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        .demo-btn {
+            padding: 8px 16px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1);
+            color: white; border-radius: 4px; cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN VIEW -->
+    <section id="view-login" class="view active">
+        <div class="login-card">
+            <div class="app-logo">FG</div>
+            <h2 class="login-title">FloodGuard</h2>
+            <p class="login-subtitle">Secure Community Monitoring</p>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" class="form-input" placeholder="user@example.com" required value="demo@floodguard.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required value="password">
+                </div>
+                <button type="submit" class="btn-primary">Sign In to Dashboard</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- APP VIEW (Hidden until logged in) -->
+    <section id="view-app" class="view">
+        
+        <!-- Header -->
+        <header>
+            <h1>FloodGuard</h1>
+            <div class="header-actions">
+                <div class="connection-status">
+                    <span id="status-text">Live</span>
+                    <div id="status-dot" class="status-dot"></div>
+                </div>
+                <button id="btn-logout" class="btn-logout">Logout</button>
+            </div>
+        </header>
+
+        <!-- Offline Banner -->
+        <div id="offline-banner">
+            Offline. Showing last update at <span id="offline-time">--:--</span>.
+        </div>
+
+        <main>
+            <!-- Sub-View: List -->
+            <div id="view-home" class="sub-view active">
+                <div id="locations-list"></div>
+            </div>
+
+            <!-- Sub-View: Detail -->
+            <div id="view-detail" class="sub-view">
+                <div class="detail-header">
+                    <button class="back-btn" onclick="app.router.go('home')">
+                        &#8592; Back
+                    </button>
+                </div>
+                <div id="detail-content"></div>
+            </div>
+        </main>
+
+        <!-- Notification Container -->
+        <div id="notification-container"></div>
+
+        <!-- Demo Controls -->
+        <div class="demo-controls">
+            <button id="btn-toggle-connection" class="demo-btn">Toggle Internet</button>
+            <button id="btn-simulate-flood" class="demo-btn">Trigger Flood Test</button>
+        </div>
+
+    </section>
+
+    <!-- JavaScript Logic -->
+    <script>
+        /**
+         * APP ARCHITECTURE:
+         * 1. AuthManager: Handles login/logout and persistence.
+         * 2. DataService: Mocks the IoT Backend.
+         * 3. UIManager: Renders the UI.
+         * 4. Router: Switches between Home/Detail screens.
+         */
+
+        const ICONS = {
+            safe: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+            danger: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+            warning: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>'
+        };
+
+        const FLOOD_THRESHOLD_CM = 20.0; 
+
+        // --- 1. AUTH MANAGER ---
+        const auth = {
+            isLoggedIn: false,
+
+            init() {
+                const storedUser = localStorage.getItem('floodguard_token');
+                if (storedUser) {
+                    this.isLoggedIn = true;
+                    app.init();
+                } else {
+                    this.showLogin();
+                }
+            },
+
+            login(email, password) {
+                // Mock Authentication
+                const btn = document.querySelector('#login-form button');
+                const originalText = btn.innerText;
+                btn.innerText = "Verifying...";
+                btn.disabled = true;
+
+                setTimeout(() => {
+                    // Success mock
+                    localStorage.setItem('floodguard_token', 'true');
+                    this.isLoggedIn = true;
+                    app.init(); // FIXED: This now calls the actual app.init function
+                }, 1000);
+            },
+
+            logout() {
+                localStorage.removeItem('floodguard_token');
+                this.isLoggedIn = false;
+                location.reload(); // Simple reload to clear state
+            },
+
+            showLogin() {
+                document.getElementById('view-login').classList.add('active');
+                document.getElementById('view-app').classList.remove('active');
+            },
+
+            showApp() {
+                document.getElementById('view-login').classList.remove('active');
+                document.getElementById('view-app').classList.add('active');
+            }
+        };
+
+        // --- APP STATE ---
+        const appState = {
+            locations: {},
+            isOnline: true,
+            lastSync: new Date()
+        };
+
+        // --- 2. DATA SERVICE ---
+        class DataService {
+            constructor() {
+                this.updateInterval = null;
+                appState.locations = {
+                    "loc_01": { id: "loc_01", name: "River Bridge 1", waterLevel: 12.5, status: "SAFE", updatedAt: new Date() },
+                    "loc_02": { id: "loc_02", name: "Community Center", waterLevel: 5.0, status: "SAFE", updatedAt: new Date() },
+                    "loc_03": { id: "loc_03", name: "Low-lying Fields", waterLevel: 18.2, status: "SAFE", updatedAt: new Date() }
+                };
+            }
+
+            startSimulation() {
+                this.updateInterval = setInterval(() => {
+                    if(!appState.isOnline) return; 
+                    this.simulateIoTUpdate();
+                }, 3000); 
+            }
+
+            simulateIoTUpdate() {
+                const ids = Object.keys(appState.locations);
+                const randomId = ids[Math.floor(Math.random() * ids.length)];
+                const location = appState.locations[randomId];
+
+                const change = (Math.random() * 1.3) - 0.5;
+                let newLevel = parseFloat((location.waterLevel + change).toFixed(1));
+                if(newLevel < 0) newLevel = 0;
+                if(newLevel > 30) newLevel = 30;
+
+                const oldStatus = location.status;
+                let newStatus = newLevel >= FLOOD_THRESHOLD_CM ? "FLOOD_CONFIRMED" : "SAFE";
+
+                location.waterLevel = newLevel;
+                location.status = newStatus;
+                location.updatedAt = new Date();
+                appState.lastSync = new Date();
+
+                app.ui.renderList();
+                if(app.ui.currentDetailId === randomId) {
+                    app.ui.renderDetail(randomId);
+                }
+
+                if (oldStatus === "SAFE" && newStatus === "FLOOD_CONFIRMED") {
+                    app.ui.sendAlert("Flood Risk Detected", `Flood risk at ${location.name}. Check the app for details.`);
+                }
+            }
+
+            triggerFloodTest() {
+                const ids = Object.keys(appState.locations);
+                const randomId = ids[Math.floor(Math.random() * ids.length)];
+                const location = appState.locations[randomId];
+                location.waterLevel = 22.5; 
+                location.status = "FLOOD_CONFIRMED";
+                location.updatedAt = new Date();
+                app.ui.renderList();
+                app.ui.sendAlert("Test Alert", `Simulated flood at ${location.name}`);
+            }
+        }
+
+        // --- 3. UI RENDERER ---
+        const ui = {
+            currentDetailId: null,
+
+            init() {
+                this.renderList();
+                this.setupDemoControls();
+                auth.showApp(); // Switch to the app view
+            },
+
+            formatTime(date) {
+                if (!date) return "";
+                const d = new Date(date);
+                const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const dateStr = d.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+                return `Last updated: ${timeStr}, ${dateStr}`;
+            },
+
+            renderList() {
+                const container = document.getElementById('locations-list');
+                container.innerHTML = '';
+
+                Object.values(appState.locations).forEach(loc => {
+                    const isFlood = loc.status === "FLOOD_CONFIRMED";
+                    
+                    const card = document.createElement('div');
+                    card.className = `location-card ${isFlood ? 'status-flood' : 'status-safe'}`;
+                    card.onclick = () => app.router.go('detail', loc.id);
+
+                    card.innerHTML = `
+                        <div class="card-info">
+                            <div class="card-title">${loc.name}</div>
+                            <div class="card-meta">
+                                <span>Water Level: ${loc.waterLevel} cm</span>
+                                <span>${this.formatTime(loc.updatedAt)}</span>
+                            </div>
+                        </div>
+                        <div class="badge ${isFlood ? 'danger' : 'safe'}">
+                            ${isFlood ? 'Flood Confirmed' : 'Safe'}
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            },
+
+            renderDetail(id) {
+                this.currentDetailId = id;
+                const loc = appState.locations[id];
+                if (!loc) return;
+
+                const isFlood = loc.status === "FLOOD_CONFIRMED";
+                const container = document.getElementById('detail-content');
+                
+                container.innerHTML = `
+                    <div class="status-hero">
+                        <div class="status-hero-icon" style="background-color: ${isFlood ? 'var(--color-danger)' : 'var(--color-safe)'}">
+                            ${isFlood ? ICONS.danger : ICONS.safe}
+                        </div>
+                        <h2 class="status-hero-text" style="color: ${isFlood ? 'var(--color-danger)' : 'var(--color-safe)'}">
+                            ${loc.status.replace('_', ' ')}
+                        </h2>
+                        <div class="water-level-display">Water Level: ${loc.waterLevel} cm</div>
+                        <div class="card-meta" style="margin-top:8px;">${this.formatTime(loc.updatedAt)}</div>
+                    </div>
+                    ${isFlood ? `
+                    <div class="alert-box" style="display:flex">
+                        <div style="flex-shrink:0">${ICONS.warning}</div>
+                        <div><strong>Warning:</strong> High water level detected. Stay alert.</div>
+                    </div>` : ''}
+                `;
+            },
+
+            sendAlert(title, body) {
+                const container = document.getElementById('notification-container');
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.innerHTML = `
+                    <div class="toast-icon">${ICONS.warning}</div>
+                    <div class="toast-content"><h4>${title}</h4><p>${body}</p></div>
+                `;
+                container.appendChild(toast);
+                requestAnimationFrame(() => toast.classList.add('show'));
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 400);
+                }, 4000);
+                toast.onclick = () => app.router.go('home');
+            },
+
+            updateConnectionStatus(isOnline) {
+                appState.isOnline = isOnline;
+                const banner = document.getElementById('offline-banner');
+                const dot = document.getElementById('status-dot');
+                const text = document.getElementById('status-text');
+                const timeSpan = document.getElementById('offline-time');
+
+                if (isOnline) {
+                    banner.style.display = 'none';
+                    dot.classList.remove('offline');
+                    text.textContent = "Live";
+                } else {
+                    banner.style.display = 'block';
+                    dot.classList.add('offline');
+                    text.textContent = "Offline";
+                    timeSpan.textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                }
+            },
+
+            setupDemoControls() {
+                document.getElementById('btn-toggle-connection').onclick = () => this.updateConnectionStatus(!appState.isOnline);
+                document.getElementById('btn-simulate-flood').onclick = () => dataService.triggerFloodTest();
+            }
+        };
+
+        // --- 4. ROUTER ---
+        const router = {
+            go(viewName, param = null) {
+                document.querySelectorAll('.sub-view').forEach(el => el.classList.remove('active'));
+                if (viewName === 'home') {
+                    ui.currentDetailId = null;
+                    document.getElementById('view-home').classList.add('active');
+                    ui.renderList();
+                } else if (viewName === 'detail') {
+                    ui.renderDetail(param);
+                    document.getElementById('view-detail').classList.add('active');
+                }
+            }
+        };
+
+        // --- 5. MAIN APP CONTROLLER ---
+        const dataService = new DataService();
+        
+        // Define the app object with the init function (FIXED)
+        const app = {
+            router,
+            ui,
+            dataService,
+            init: function() {
+                console.log("App Initializing...");
+                this.ui.init();
+                this.dataService.startSimulation();
+            }
+        };
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.init(); // Start with Auth check
+        });
+
+        // Login Form Handler
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            if(email && pass) {
+                auth.login(email, pass);
+            }
+        });
+
+        // Logout Handler
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            if(confirm("Are you sure you want to logout?")) {
+                auth.logout();
+            }
+        });
+
+    </script>
+</body>
+</html>
